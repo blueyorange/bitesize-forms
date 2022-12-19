@@ -2,10 +2,10 @@ const DomParser = require("dom-parser");
 const parser = new DomParser();
 const fs = require("fs");
 const {
-  authenticateUser,
   createForm,
   formToQuiz,
   addItemsToForm,
+  authenticateUser,
 } = require("./formsAPI");
 
 function createItem(title, options) {
