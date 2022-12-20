@@ -44,53 +44,56 @@ function superscript(str) {
     8: "\u2078",
     9: "\u2079",
   };
-  console.log(map[str]);
+  return map[str];
+}
+
+function subscript(str) {
+  const map = {
+    0: "\u2080",
+    1: "\u2081",
+    2: "\u2082",
+    3: "\u2083",
+    4: "\u2084",
+    5: "\u2085",
+    6: "\u2086",
+    7: "\u2087",
+    8: "\u2088",
+    9: "\u2089",
+  };
   return map[str];
 }
 
 async function convertToForm() {
-  const resp = await fetch(
-    "https://www.bbc.co.uk/bitesize/guides/zqjy6yc/test"
-  );
-
   const document = (
-    await JSDOM.fromURL("https://www.bbc.co.uk/bitesize/guides/zqjy6yc/test")
+    await JSDOM.fromURL("https://www.bbc.co.uk/bitesize/guides/zwc7pbk/test")
   ).window.document;
   const title = document
     .querySelector(".test-chapter")
     .querySelector("h1").textContent;
-  // convert all superscript elements to unicode characters
-  const sups = document.getElementsByTagName("sup");
-  for (let sup of sups) {
-    const parent = sup.parentNode;
-    console.log("1>> ", parent.textContent);
-    const supChar = superscript(sup.textContent.trim());
+  const supElements = document.querySelectorAll("sup");
+  for (let supElement of supElements) {
+    let supChar = superscript(supElement.textContent);
     if (supChar) {
-      sup.outerHTML = supChar;
+      supElement.outerHTML = superscript(supElement.textContent);
     }
-    // console.log("2>> ", parent.textContent);
   }
-  const items = Array.from(
-    document.getElementsByClassName("question--radio")
-  ).map((el) => {
-    const sups = el.getElementsByTagName("sup");
-    for (let sup of sups) {
-      const parent = sup.parentNode;
-      const supChar = superscript(sup.textContent.trim());
-      if (supChar) {
-        sup.outerHTML = supChar;
-      } else {
-        console.log("missed this one ", supChar);
-      }
+  const subElements = document.querySelectorAll("sub");
+  for (let subElement of subElements) {
+    let subChar = subscript(subElement.textContent);
+    if (subChar) {
+      subElement.outerHTML = subscript(subElement.textContent);
     }
-    const prompt = el.getElementsByClassName("question-prompt")[0].textContent;
-    // console.log(prompt);
-    const options = Array.from(el.getElementsByClassName("radio-answer")).map(
-      (el) => el.textContent
-    );
-    return createItem(prompt, options);
-  });
-  process.exit();
+  }
+  const questions = document.getElementsByClassName("question--radio");
+  const items = [];
+  for (let question of questions) {
+    const prompt =
+      question.getElementsByClassName("question-prompt")[0].textContent;
+    const options = Array.from(
+      question.getElementsByClassName("radio-answer")
+    ).map((question) => question.textContent);
+    items.push(createItem(prompt, options));
+  }
   fs.writeFileSync("quiz.json", JSON.stringify(items));
   await authenticateUser();
   const formId = await createForm(title);
